@@ -18,8 +18,10 @@ namespace Lab2
         private double timeCreate, timeProcess;
 
         private List<double> timeCreateList = new List<double>();
+
         private List<int> queueValues = new List<int>();
         private List<double> queueTime = new List<double>();
+        private List<double> createdTime = new List<double>();
 
         public Model(double delay0, double delay1, int maxQ = 3)
         {
@@ -76,7 +78,7 @@ namespace Lab2
             var intensivityOfRequests = numCreate / allTime;
             var intensivityOfService = numProcess / allTime;
 
-            var avgEnterCreate = modifications.RequestsArrivedPerTime(intensivityOfRequests, intensivityOfService);
+            var avgEnterCreate = modifications.RequestsArrivedPerTime(createdTime, numCreate);
 
             var avgPres = modifications.AvgPressureCalculate(queueValues, queueTime, allTime);
             var avgWaitInQueue = modifications.AvgWaitInQueue(queueValues, queueTime, numProcess);
@@ -97,6 +99,8 @@ namespace Lab2
         {
             timeCreate = tcurr + getDelayOfCreate();
             numCreate++;
+            createdTime.Add(timeCreate - tcurr);
+
             if (state == State.Active)
             {
                 state = State.Busy;

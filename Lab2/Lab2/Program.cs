@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 
 namespace Lab2
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-           Model model = new Model(2,1, 4);
-                   model.simulate(1000);
-
+            Model model = new Model(15, 10, 2);
+            model.simulate(1000);
         }
     }
 }

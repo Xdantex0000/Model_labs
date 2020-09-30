@@ -21,11 +21,17 @@ namespace Lab2
             return result;
         }
 
-        public double RequestsArrivedPerTime(double intensivityOfRequest, double intensivityOfService)
+        public double RequestsArrivedPerTime(List<double> createdTime, int createdCount)
         {
             double result;
+            double chisl = 0.0;
 
-            result = intensivityOfService / (intensivityOfRequest + intensivityOfService);
+            foreach (var x in createdTime)
+            {
+                chisl += x;
+            }
+
+            result = chisl / createdCount;
 
             return result;
         }

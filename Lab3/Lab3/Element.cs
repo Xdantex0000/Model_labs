@@ -1,20 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Lab3
 {
     public class Element
     {
         private static int nextId;
+        public static int disposed = 0;
+
+        // середеє значення часової затримки / середнє квадратичне відхилення часової затримки
         private double delayMean, delayDev;
+
         private string distribution;
         private int id;
         private string name;
-        private Element nextElement;
+        private List<Element> nextElement = new List<Element>();
         private int quantity;
         private int state;
-        private double tcurr;
-        private double tnext;
 
+        // поточний момент часу
+        private double tcurr;
+
+        // момент часу наступної події
+        private double tnext;
 
         public Element()
         {
@@ -23,7 +31,6 @@ namespace Lab3
             distribution = "exp";
             tcurr = tnext;
             state = 0;
-            nextElement = null;
             id = nextId;
             nextId++;
             name = "element" + id;
@@ -31,16 +38,25 @@ namespace Lab3
 
         public Element(double delay)
         {
-            name = "anonymus";
             tnext = 0.0;
             delayMean = delay;
             distribution = "";
             tcurr = tnext;
             state = 0;
-            nextElement = null;
             id = nextId;
             nextId++;
             name = "element" + id;
+        }
+
+        public Element(string deviceName)
+        {
+            tnext = 0.0;
+            delayMean = 1.0;
+            distribution = "exp";
+            tcurr = tnext;
+            state = 0;
+            id = nextId - 1;
+            name = deviceName;
         }
 
         public Element(string nameOfElement, double delay)
@@ -57,30 +73,31 @@ namespace Lab3
             name = "element" + id;
         }
 
+        // розрахунок часової затримками
         public double getDelay()
         {
             var delay = getDelayMean();
-            if ("exp".equalsIgnoreCase(getDistribution()))
+            if ("exp".ToLower() == getDistribution().ToLower())
             {
                 delay = FunRand.Exp(getDelayMean());
             }
             else
             {
-                if ("norm".equalsIgnoreCase(getDistribution()))
+                if ("norm".ToLower() == getDistribution().ToLower())
                 {
                     delay = FunRand.Norm(getDelayMean(),
                         getDelayDev());
                 }
                 else
                 {
-                    if ("unif".equalsIgnoreCase(getDistribution()))
+                    if ("unif".ToLower() == getDistribution().ToLower())
                     {
                         delay = FunRand.Unif(getDelayMean(),
                             getDelayDev());
                     }
                     else
                     {
-                        if ("".equalsIgnoreCase(getDistribution()))
+                        if ("".ToLower() == getDistribution().ToLower())
                             delay = getDelayMean();
                     }
                 }
@@ -88,7 +105,6 @@ namespace Lab3
 
             return delay;
         }
-
 
         public double getDelayDev()
         {
@@ -109,7 +125,6 @@ namespace Lab3
         {
             this.distribution = distribution;
         }
-
 
         public int getQuantity()
         {
@@ -136,21 +151,35 @@ namespace Lab3
             this.state = state;
         }
 
-        public Element getNextElement()
+        public List<Element> getNextElements()
         {
             return nextElement;
         }
 
-        public void setNextElement(Element nextElement)
+        public void setNextElement(Element _nextElement)
         {
-            this.nextElement = nextElement;
+            this.nextElement.Add(_nextElement);
         }
 
-        public void inAct()
+        public void setZeroToMax()
+        {
+            foreach (var x in getNextElements())
+            {
+                if (x.getTnext() == 0)
+                {
+                    x.setTnext(double.MaxValue);
+                    x.setZeroToMax();
+                }
+            }
+        }
+
+        // вхід в елемент
+        public virtual void inAct()
         {
         }
 
-        public void outAct()
+        // вихід з елементу
+        public virtual void outAct()
         {
             quantity++;
         }
@@ -159,7 +188,6 @@ namespace Lab3
         {
             return tnext;
         }
-
 
         public void setTnext(double tnext)
         {
@@ -206,7 +234,7 @@ namespace Lab3
             this.name = name;
         }
 
-        public void doStatistics(double delta)
+        public virtual void doStatistics(double delta)
         {
         }
     }

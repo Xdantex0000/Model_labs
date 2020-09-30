@@ -10,6 +10,7 @@
         <e p="bin" t="ExcludeRecursive" />
         <e p="Create.cs" t="Include" />
         <e p="Element.cs" t="Include" />
+        <e p="FunRand.cs" t="Include" />
         <e p="Lab3.csproj" t="IncludeRecursive" />
         <e p="Model.cs" t="Include" />
         <e p="obj" t="ExcludeRecursive">
