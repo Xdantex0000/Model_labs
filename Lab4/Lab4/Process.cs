@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lab3
+namespace Lab4
 {
     public class Process : Element
     {
@@ -92,7 +92,7 @@ namespace Lab3
             outDevice.setTnext(double.MaxValue);
             outDevice.setState(0);
 
-            base.outAct();
+            addQuantity();
             base.setTnext(double.MaxValue);
 
             if (getQueue() > 0)
@@ -129,9 +129,19 @@ namespace Lab3
             }
         }
 
+        protected void addQuantity()
+        {
+            base.outAct();
+        }
+
         public int getFailure()
         {
             return failure;
+        }
+
+        protected void addFailure()
+        {
+            failure++;
         }
 
         public int getQueue()
@@ -170,14 +180,14 @@ namespace Lab3
             return meanQueue;
         }
 
-        private void addPressureVariable(int item, double tcurr, int iteration)
+        public void addPressureVariable(int item, double tcurr, int iteration)
         {
             RList[iteration].Add(item);
             RInterval[iteration].Add(tcurr - lastMove);
             lastMove = tcurr;
         }
 
-        private void addQueueVariable(int queue, double tcurr)
+        public void addQueueVariable(int queue, double tcurr)
         {
             QList.Add(queue);
             QInterval.Add(tcurr - lastQMove);

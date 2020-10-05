@@ -14,6 +14,7 @@ namespace Lab3
 
         public Model(List<Element> elements)
         {
+            Element.disposed = 0;
             list = elements;
             tnext = 0.0;
             Event = 0;
@@ -29,11 +30,11 @@ namespace Lab3
                 // Set tnext to max value of double
                 tnext = double.MaxValue;
                 // Choose the action (create or process)
-                foreach (var e in list)
-                    if (e.getTnext() < tnext)
+                for (int i = 0; i < list.Count; i++)
+                    if (list[i].getTnext() < tnext)
                     {
-                        tnext = e.getTnext();
-                        Event = e.getId();
+                        tnext = list[i].getTnext();
+                        Event = i;
                     }
 
                 Console.WriteLine($"\nIt's time for Event in {list[Event].getName()}, time = {tnext}");
@@ -77,6 +78,8 @@ namespace Lab3
                 if (e.getName() != "CREATOR")
                 {
                     var proc = (Process)e;
+                    Console.WriteLine($"Failure: {proc.getFailure()}");
+
                     Console.WriteLine($"Refusal probability = {getRefusalProb()}");
                     for (int i = 0; i < proc.Devices.Count(); i++)
                         Console.WriteLine(i + 1 + ". Device has quantity: " + proc.Devices[i].getQuantity());
@@ -96,22 +99,30 @@ namespace Lab3
             Console.WriteLine($"Disposed tasks: {Element.disposed}");
         }
 
+        public List<Element> getList()
+        {
+            return list;
+        }
+
         // 2.1 ймовірність відмови
-        private double getRefusalProb()
+        public double getRefusalProb()
         {
             var creatorCount = 0;
 
             foreach (var e in list)
             {
                 if (e.getName() == "CREATOR")
-                    creatorCount += e.getQuantity();
+                {
+                    creatorCount = e.getQuantity();
+                    break;
+                }
             }
 
             return Convert.ToDouble(creatorCount - Element.disposed) / Convert.ToDouble(creatorCount);
         }
 
         // 2.2 Максимальне значення черги
-        private double maxQueueValue(Process process)
+        public double maxQueueValue(Process process)
         {
             if (process.QList.Count() == 0)
             {
@@ -129,7 +140,7 @@ namespace Lab3
         }
 
         // 2.3 Середнє значення черги
-        private double avgQueueValue(Process process)
+        public double avgQueueValue(Process process)
         {
             if (process.QList.Count() == 0)
             {
@@ -156,7 +167,7 @@ namespace Lab3
         }
 
         // 2.4 Максимальне значення завантаження пристрою
-        private double[] maxQueuePressure(Process process)
+        public double[] maxQueuePressure(Process process)
         {
             var maxRIntervals = new double[process.Devices.Count()];
 
@@ -171,7 +182,7 @@ namespace Lab3
         }
 
         // 2.5 Середнє значення завантаження пристрою
-        private List<double> avgQueuePressure(Process process)
+        public List<double> avgQueuePressure(Process process)
         {
             List<double> result = new List<double>();
 

@@ -1,47 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 
-namespace Lab3
+namespace Lab4
 {
-    public class Process : Element
+    public class Follower : Element
     {
-        public bool disposable = false;
+        public static List<double> ResultFollowerTime = new List<double>();
+        private Queue<double> pastTime = new Queue<double>();
+        public static int disposedFromFollower = 0;
         private int queue, maxqueue, failure;
         private double meanQueue;
-        private double lastMove = 0;
-        private double lastQMove = 0;
 
         public List<Element> Devices { get; set; } = new List<Element>();
 
-        public List<int>[] RList { get; set; }
-        public List<double>[] RInterval { get; set; }
-        public List<int> QList { get; set; } = new List<int>();
-
-        public List<double> QInterval { get; set; } = new List<double>();
-
-        public Process(double delay, int deviceNumber) : base(delay)
+        public Follower(int deviceNumber) : base(new Random().NextDouble() * (8.0 - 3.0) + 3.0)
         {
             queue = 0;
             maxqueue = int.MaxValue;
             meanQueue = 0.0;
             for (int i = 0; i < deviceNumber; i++)
             {
-                Devices.Add(new Element("Device"));
+                Devices.Add(new Element("Follower"));
             }
-            RList = new List<int>[deviceNumber];
-            for (int i = 0; i < deviceNumber; i++)
-                RList[i] = new List<int>();
-            RInterval = new List<double>[deviceNumber];
-            for (int i = 0; i < deviceNumber; i++)
-                RInterval[i] = new List<double>();
         }
 
-        public override void inAct()
+        public void inActTime(double time)
         {
+            pastTime.Enqueue(time);
             double minT = double.MaxValue;
 
-            for (int i = 0; i < Devices.Count(); i++)
+            for (int i = 0; i < Devices.Count; i++)
             {
                 if (Devices[i].getState() == 0)
                 {
@@ -55,16 +44,12 @@ namespace Lab3
                     base.setTnext(minT);
                     base.setZeroToMax();
 
-                    addPressureVariable(0, getTcurr(), i);
-
                     return;
                 }
             }
             if (getQueue() < getMaxqueue())
             {
-                addQueueVariable(getQueue(), getTcurr());
-
-                setQueue(getQueue() + 1);
+                this.setQueue(getQueue() + 1);
             }
             else
             {
@@ -74,33 +59,32 @@ namespace Lab3
 
         public override void outAct()
         {
-            bool inQueue = false;
-            int iteration = int.MinValue;
             Element outDevice = null;
             double minT = double.MaxValue;
-            for (int i = 0; i < Devices.Count(); i++)
+            // ------------- Find device with correct Tnext ---------------
+            for (int i = 0; i < Devices.Count; i++)
             {
                 if (Devices[i].getState() == 1 && Devices[i].getTnext() == base.getTcurr())
                 {
-                    iteration = i;
                     outDevice = Devices[i];
                 }
-                else if (outDevice == null && i == Devices.Count() - 1)
+                else if (outDevice == null && i == Devices.Count - 1)
                     throw new Exception("Error");
             }
+            // -------------- Count the time in system --------------------
+            ResultFollowerTime.Add(outDevice.getTnext() - pastTime.Dequeue());
+            // -------------- Reset Device ---------------
             outDevice.outAct();
             outDevice.setTnext(double.MaxValue);
             outDevice.setState(0);
+            outDevice.setType(0);
+            // -------------------------------------------
 
-            base.outAct();
+            addQuantity();
             base.setTnext(double.MaxValue);
 
             if (getQueue() > 0)
             {
-                inQueue = true;
-
-                addQueueVariable(getQueue(), getTcurr());
-
                 setQueue(getQueue() - 1);
                 outDevice.setState(1);
                 outDevice.setTnext(base.getTcurr() + base.getDelay());
@@ -109,29 +93,24 @@ namespace Lab3
                 if (minT > x.getTnext() && x.getState() == 1)
                     minT = x.getTnext();
             base.setTnext(minT);
-            if (inQueue == false && iteration != int.MinValue)
-            {
-                addPressureVariable(1, getTcurr(), iteration);
-            }
 
-            Random rand = new Random();
-            double num = rand.NextDouble();
-            int size = getNextElements().Count();
-            if (disposable == true)
-                size++;
-            for (int i = 0; i < size; i++)
-            {
-                if (num > (double)i / (double)size && num <= (double)(i + 1) / (double)size)
-                    if (disposable == true && i == size - 1)
-                        disposed++;
-                    else
-                        getNextElements()[i].inAct();
-            }
+            disposedFromFollower++;
+            disposed++;
+        }
+
+        protected void addQuantity()
+        {
+            base.outAct();
         }
 
         public int getFailure()
         {
             return failure;
+        }
+
+        protected void addFailure()
+        {
+            failure++;
         }
 
         public int getQueue()
@@ -160,28 +139,9 @@ namespace Lab3
             Console.WriteLine("failure = " + this.getFailure());
         }
 
-        public override void doStatistics(double delta)
-        {
-            meanQueue = getMeanQueue() + queue * delta;
-        }
-
         public double getMeanQueue()
         {
             return meanQueue;
-        }
-
-        private void addPressureVariable(int item, double tcurr, int iteration)
-        {
-            RList[iteration].Add(item);
-            RInterval[iteration].Add(tcurr - lastMove);
-            lastMove = tcurr;
-        }
-
-        private void addQueueVariable(int queue, double tcurr)
-        {
-            QList.Add(queue);
-            QInterval.Add(tcurr - lastQMove);
-            lastQMove = tcurr;
         }
     }
 }

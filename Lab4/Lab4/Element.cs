@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Lab3
+namespace Lab4
 {
     public class Element
     {
@@ -19,6 +19,7 @@ namespace Lab3
         private List<Element> nextElement = new List<Element>();
         private int quantity;
         private int state;
+        private int type;
 
         // поточний момент часу
         private double tcurr;
@@ -83,8 +84,18 @@ namespace Lab3
             quantity = new int();
         }
 
+        public int getType()
+        {
+            return type;
+        }
+
+        public void setType(int type)
+        {
+            this.type = type;
+        }
+
         // розрахунок часової затримками
-        public double getDelay()
+        public virtual double getDelay()
         {
             var delay = getDelayMean();
             if ("exp".ToLower() == getDistribution().ToLower())
