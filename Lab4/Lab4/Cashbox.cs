@@ -117,7 +117,7 @@ namespace Lab4
             var proc = (Process)getNextElements()[0];
             var procQueueValue = proc.getQueue();
 
-            if (this.getQueue() == procQueueValue - 1 || (this.getQueue() > procQueueValue - 1 && this.getQueue() > 1))
+            if (this.getQueue() == procQueueValue - 2 || (this.getQueue() > procQueueValue - 2 && this.getQueue() > 1))
             {
                 LineChange++;
                 proc.inAct();

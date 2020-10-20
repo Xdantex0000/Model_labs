@@ -37,7 +37,7 @@ namespace Lab4
                         Event = i;
                     }
 
-                //Console.WriteLine($"\nIt's time for Event in {list[Event].getName()}, time = {tnext}");
+                // Console.WriteLine($"\nIt's time for Event in {list[Event].getName()}, time = {tnext}");
                 // Count statistics
                 foreach (var e in list) e.doStatistics(tnext - tcurr);
                 tcurr = tnext;
@@ -48,7 +48,7 @@ namespace Lab4
                 foreach (var e in list)
                     if (e.getTnext() == tcurr && e.getTnext() != 0)
                         e.outAct();
-                //printInfo();
+                // printInfo();
             }
 
             printResultFirst();
@@ -97,26 +97,19 @@ namespace Lab4
             foreach (var e in list)
             {
                 e.printResult();
-                ;
-                if (typeof(Process) == e.GetType())
+                if (typeof(Cashbox) == e.GetType())
                 {
-                    var p = (Process)e;
+                    var proc = (Cashbox)e;
                     Console.WriteLine("mean length of queue = " +
-                                      p.getMeanQueue() / tcurr
+                                      proc.getMeanQueue() / tcurr
                                       + "\nfailure probability  = " +
-                                      p.getFailure() / (double)p.getQuantity());
-                }
-
-                if (e.getName() != "CREATOR")
-                {
-                    var proc = (Process)e;
+                                      proc.getFailure() / (double)proc.getQuantity());
                     Console.WriteLine($"Failure: {proc.getFailure()}");
 
                     //Console.WriteLine($"Refusal probability = {getRefusalProb()}");
                     for (int i = 0; i < proc.Devices.Count(); i++)
                         Console.WriteLine(i + 1 + ". Device has quantity: " + proc.Devices[i].getQuantity());
                     Console.WriteLine($"Maximal value of queue = {maxQueueValue((Process)e)}");
-                    Console.WriteLine($"Average value of queue = {avgQueueValue((Process)e)}");
                     for (int i = 0; i < maxQueuePressure((Process)e).Count(); i++)
                     {
                         Console.WriteLine($"On device: {i + 1} maximal pressure = {maxQueuePressure((Process)e)[i]}");
@@ -126,6 +119,11 @@ namespace Lab4
                         Console.WriteLine($"On device: {i + 1} average pressure = {avgQueuePressure((Process)e)[i]}");
                     }
                 }
+                else if (typeof(Create) == e.GetType())
+                {
+                    e.printInfo();
+                }
+
                 Console.WriteLine();
             }
             Console.WriteLine($"Disposed tasks: {Element.disposed}");
@@ -141,7 +139,6 @@ namespace Lab4
             foreach (var e in list)
             {
                 e.printResult();
-                ;
                 if (typeof(Process) == e.GetType())
                 {
                     var p = (Process)e;
@@ -197,14 +194,11 @@ namespace Lab4
                 Console.WriteLine();
             }
             Console.WriteLine();
-            foreach (var x in Follower.ResultFollowerTime)
-                Console.WriteLine($"Time in system, first type of pacient: {x}");
+            Console.WriteLine($"Time in system, first type of pacient: {avg1()}");
             Console.WriteLine();
-            foreach (var x in Lab.ResultLabTime)
-                Console.WriteLine($"Time in system, second and third type of pacient: {x}");
+            Console.WriteLine($"Time in system, second and third type of pacient: {avg2()}");
             Console.WriteLine();
-            foreach (var x in Lab.avgInInterval())
-                Console.WriteLine($"Pacients arrive Lab with interval: {x}");
+            Console.WriteLine($"Pacients arrive Lab with interval: {avg3()}");
             Console.WriteLine();
             Console.WriteLine($"Disposed from Cabinet: {Cabinet.disposedFromCabinet}");
             Console.WriteLine($"Disposed from Followers: {Cabinet.disposedFromCabinet}");
@@ -212,6 +206,36 @@ namespace Lab4
             Console.WriteLine($"Disposed from Registration: {Registration.disposedFromRegistration}");
             Console.WriteLine($"Disposed from Lab: {Lab.disposedFromLab}");
             Console.WriteLine($"\nDisposed: {Element.disposed}");
+        }
+
+        public double avg3()
+        {
+            double result = 0.0;
+
+            foreach (var x in Lab.avgInInterval())
+                result += x;
+
+            return result / Lab.avgInInterval().Count;
+        }
+
+        public double avg2()
+        {
+            double result = 0.0;
+
+            foreach (var x in Lab.ResultLabTime)
+                result += x;
+
+            return result / Lab.ResultLabTime.Count;
+        }
+
+        public double avg1()
+        {
+            double result = 0.0;
+
+            foreach (var x in Follower.ResultFollowerTime)
+                result += x;
+
+            return result / Follower.ResultFollowerTime.Count;
         }
 
         public List<Element> getList()
@@ -289,33 +313,6 @@ namespace Lab4
             }
 
             return maxQList;
-        }
-
-        // 2.3 Середнє значення черги
-        public double avgQueueValue(Process process)
-        {
-            if (process.QList.Count() == 0)
-            {
-                return 0.0;
-            }
-
-            var avgDict = new Dictionary<int, double>();
-            double result = 0;
-
-            for (int i = 0; i < process.QInterval.Count; i++)
-            {
-                if (!avgDict.ContainsKey(process.QList[i]))
-                    avgDict.Add(process.QList[i], process.QInterval[i]);
-                else
-                    avgDict[process.QList[i]] += process.QInterval[i];
-            }
-
-            for (int i = 0; i <= avgDict.Keys.Max(); i++)
-            {
-                result += i * avgDict[i] / time;
-            }
-
-            return result;
         }
 
         // 2.4 Максимальне значення завантаження пристрою

@@ -10,7 +10,8 @@
         {
             base.outAct();
             base.setTnext(base.getTcurr() + base.getDelay());
-            base.getNextElements()[0].inAct();
+            var process = (Process)base.getNextElements()[0];
+            process.inAct();
         }
     }
 }

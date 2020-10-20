@@ -130,7 +130,7 @@ namespace Lab4
             if (outDevice.getType() == (int)Type.First)
             {
                 var follower = (Follower)getNextElements()[0];
-                follower.inActTime(getTcurr());
+                follower.inActTime(pastTime.Dequeue());
             }
             else
             {
