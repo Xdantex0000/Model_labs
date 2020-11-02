@@ -61,7 +61,7 @@ namespace Lab5
                 //Console.WriteLine($"\nIt's time for Event in {list[Event].getName()}, time = {tnext}");
                 eventIntensivity.Add(tnext - tcurr);
                 // Count statistics
-                foreach (var e in list) e.doStatistics(tnext - tcurr);
+                // foreach (var e in list) e.doStatistics(tnext - tcurr);
                 tcurr = tnext;
                 // Set all tcurr in element to new values
                 foreach (var e in list) e.setTcurr(tcurr);
@@ -75,7 +75,7 @@ namespace Lab5
 
             //printResult(time);
 
-            return ((1 / createDelay) + (countOfProcess / processDelay)) * tcurr * 4;
+            return list.Count;
         }
 
         public void printInfo()
