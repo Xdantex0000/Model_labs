@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lab7
 {
@@ -15,59 +16,52 @@ namespace Lab7
         public void simulate(int coutIterations, bool printState)
         {
             InArcCalculate();
-            SortProbability();
+            SortPriority();
 
-            for (int i = 0; i < coutIterations; i++)
+            for (int i = 0; i < coutIterations; i++) // Loop till i equals countIterations
             {
+                List<Transition> transitions = new List<Transition>();
+
                 for (int j = list.Count - 1; j >= 0; j--) // Loop by all elements in list
                 {
-                    List<bool> trList = new List<bool>();
-                    bool transited = false;
                     Position element = null;
                     if (list[j].GetType() == typeof(Position))
                         element = (Position)list[j];
 
                     bool transit = true;
-                    if (element != null)
+                    if (element != null) // If position
                     {
                         Transition nextElement = null;
                         bool probabilitized = false;
-                        for (int z = 0; z < element.OutArcs.Count; z++) // Loop by all outArc list
+                        for (int z = 0; z < element.OutArcs.Count; z++) // Loop by all outArc list for position "Element"
                         {
+                            bool transitable = true;
                             probabilitized = element.OutArcs[z].Probability == 1.0 ? false : true;
-                            trList.Add(true);
                             nextElement = (Transition)element.OutArcs[z].NextElement;
                             foreach (var el in nextElement.InArcs)
                             {
                                 Position inPos = (Position)el.NextElement;
                                 if (el.Multiplicity > inPos.MarkersCount)
                                 {
-                                    if (probabilitized)
+                                    transitable = false;
+                                    transit = false;
+                                    if (!probabilitized)
                                     {
-                                        transit = false;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        trList[z] = false;
-                                        transit = false;
                                         continue;
                                     }
+                                    else break;
                                 }
+                            }
+                            if (transitable && !probabilitized && !transitions.Contains(nextElement))
+                            {
+                                transitions.Add(nextElement);
                             }
                             if (transit && probabilitized) break;
                         }
                         if (nextElement != null)
                         {
-                            if (transit && !probabilitized) // Default transmit
+                            if (transit && probabilitized) // Transit on probability
                             {
-                                transited = true;
-                                Transit(nextElement, printState);
-                                break;
-                            }
-                            else if (transit && probabilitized) // Transmit on probability
-                            {
-                                transited = true;
                                 double rand = new Random().NextDouble();
                                 double start = 0.0;
                                 foreach (var x in element.OutArcs)
@@ -82,13 +76,12 @@ namespace Lab7
                                 break;
                             }
                         }
-                        if (transited == false && j == 0)
-                        {
-                            Console.WriteLine("There are no transitions!");
-                            if (printState)
-                                printResult();
-                            return;
-                        }
+                    }
+
+                    if (transitions.Count != 0 && j == 0 && transit)
+                    {
+                        TransitConflict(transitions, printState);
+                        break;
                     }
                 }
             }
@@ -142,25 +135,65 @@ namespace Lab7
             }
         }
 
+        public void TransitConflict(List<Transition> transitions, bool printState)
+        {
+            List<Position> positions = new List<Position>();
+            List<Transition> transited = new List<Transition>();
+            double rand = new Random().NextDouble();
+
+            for (int i = 0; i < transitions.Count; i++)
+                for (int j = 0; j < transitions[i].InArcs.Count; j++)
+                    if (!positions.Contains(transitions[i].InArcs[j].NextElement))
+                        positions.Add((Position)transitions[i].InArcs[j].NextElement);
+
+            List<Transition>[] transitionsByPosition = new List<Transition>[positions.Count];
+            for (int i = 0; i < transitionsByPosition.Length; i++)
+                transitionsByPosition[i] = new List<Transition>();
+
+            for (int i = 0; i < transitions.Count; i++)
+                for (int j = 0; j < transitions[i].InArcs.Count; j++)
+                    for (int z = 0; z < positions.Count; z++)
+                        if (transitions[i].InArcs[j].NextElement == positions[z] && !transitionsByPosition[z].Contains(transitions[i]))
+                            transitionsByPosition[z].Add(transitions[i]);
+
+            for (int i = 0; i < transitionsByPosition.Length; i++)
+                if (transitionsByPosition[i].Count > 1)
+                {
+                    for (int j = 0; j < transitionsByPosition[i].Count; j++)
+                    {
+                        if (rand >= (double)j / (double)transitionsByPosition[i].Count && rand < (double)(j + 1) / (double)transitionsByPosition[i].Count)
+                            Transit(transitionsByPosition[i][j], printState);
+                        transited.Add(transitionsByPosition[i][j]);
+                    }
+                }
+                else if (!transited.Contains(transitionsByPosition[i][0]))
+                    Transit(transitionsByPosition[i][0], printState);
+        }
+
         public void Transit(Transition transition, bool printState)
         {
             Position position;
             if (printState)
-                Console.WriteLine("In Arg:");
-            foreach (var x in transition.InArcs)
+            {
+                Console.WriteLine($"{transition.Name.ToUpper()} is transited");
+                Console.WriteLine("Out Arg:");
+            }
+            foreach (var x in transition.OutArcs)
             {
                 position = (Position)x.NextElement;
-                position.MarkersCount--;
+                position.MarkersCount += x.Multiplicity;
                 if (printState)
                     Console.WriteLine($"  {position.Name} has {position.MarkersCount} markers");
                 position.MarkerHistory.Add(position.MarkersCount);
             }
+
             if (printState)
-                Console.WriteLine("Out Arg:");
-            foreach (var x in transition.OutArcs)
+                Console.WriteLine("In Arg:");
+
+            foreach (var x in transition.InArcs)
             {
                 position = (Position)x.NextElement;
-                position.MarkersCount++;
+                position.MarkersCount -= x.Multiplicity;
                 if (printState)
                     Console.WriteLine($"  {position.Name} has {position.MarkersCount} markers");
                 position.MarkerHistory.Add(position.MarkersCount);
@@ -199,7 +232,7 @@ namespace Lab7
             return false;
         }
 
-        public void SortProbability()
+        public void SortPriority()
         {
             foreach (var x in list)
             {
