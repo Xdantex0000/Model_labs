@@ -39,6 +39,7 @@ namespace Lab7
             t3.OutArcs.Add(new Arc(1, p4, 1.0));
             p4.OutArcs.Add(new Arc(1, t4, 1.0));
             t4.OutArcs.Add(new Arc(1, p5, 1.0));
+            p5.OutArcs.Add(new Arc(1, t1, 1.0));
             t4.OutArcs.Add(new Arc(1, p1, 1.0));
             t4.OutArcs.Add(new Arc(1, p11, 1.0));
             p6.OutArcs.Add(new Arc(1, t5, 1.0));
@@ -50,6 +51,7 @@ namespace Lab7
             p9.OutArcs.Add(new Arc(1, t8, 1.0));
             t8.OutArcs.Add(new Arc(1, p10, 1.0));
             t8.OutArcs.Add(new Arc(1, p6, 1.0));
+            p10.OutArcs.Add(new Arc(1, t5, 1.0));
             t8.OutArcs.Add(new Arc(1, p11, 1.0));
             p11.OutArcs.Add(new Arc(1, t2, 1.0));
             p11.OutArcs.Add(new Arc(1, t6, 1.0));
