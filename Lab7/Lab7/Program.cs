@@ -46,8 +46,11 @@ namespace Lab7
             Element p4 = new Position(0, "p4");
             Element p5 = new Position(10, "p5");
             Element t3 = new Transition(1.0, "t3");
+            Element t4 = new Transition(1.0, "t4");
+            Element p6 = new Position(0, "p6");
+            Element p7 = new Position(0, "p7");
 
-            Element[] items = { p1, t1, p2, t2, p3, t3, p4, p5 };
+            Element[] items = { p1, t1, p2, t2, p3, t3, p4, p5, p6, p7, t4 };
 
             p1.OutArcs.Add(new Arc(1, t1, 1.0));
             t1.OutArcs.Add(new Arc(1, p1, 1.0));
@@ -57,6 +60,9 @@ namespace Lab7
             t2.OutArcs.Add(new Arc(1, p4, 1.0));
             t3.OutArcs.Add(new Arc(1, p3, 1.0));
             p5.OutArcs.Add(new Arc(2, t2, 1.0));
+            p5.OutArcs.Add(new Arc(1, t4, 1.0));
+            t4.OutArcs.Add(new Arc(10, p6, 1.0));
+            t4.OutArcs.Add(new Arc(1, p7, 1.0));
 
             Model model = new Model(elements);
             model.list.AddRange(items);
